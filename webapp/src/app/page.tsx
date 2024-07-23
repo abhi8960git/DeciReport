@@ -1,4 +1,5 @@
 "use client";
+import "./style.css"
 import React, { useState, useEffect } from "react";
 import {
   RainbowKitProvider,
@@ -25,9 +26,10 @@ import { publicProvider } from "wagmi/providers/public";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "@rainbow-me/rainbowkit/styles.css";
 import { stakingTNT20ABI } from "../ABI";
-
+import {Table}  from 'antd'
+import { InjectedConnector } from '@wagmi/core/connectors/injected'
 // const TNT20_CONTRACT = '0x644B6533038DA0Ee6c330f51A16940139bbbE50B'
-const TNT20_CONTRACT = "0xD40905FD18c7ACf16C9eBD80Fd751C37a3d3ea63";
+const TNT20_CONTRACT = "0xaad58aeee3fa13a47f3636de683daf540385f535";
 const TNT721_CONTRACT = "0x045eE648e4BBAb1b1bcBe95B60e76C9A8143488f";
 const projectID = "73bfede1812912189a63f8b354eac692";
 const tokenSymbol = "RWD";
@@ -57,30 +59,6 @@ const theta = {
   },
 };
 
-const testnet = {
-  id: 361,
-  name: "Theta Mainnet",
-  network: "theta",
-  nativeCurrency: {
-    decimals: 18,
-    name: "TFUEL",
-    symbol: "TFUEL",
-  },
-  rpcUrls: {
-    public: { http: ["https://eth-rpc-api.thetatoken.org"] },
-    default: { http: ["https://eth-rpc-api.thetatoken.org"] },
-  },
-  blockExplorers: {
-    etherscan: {
-      name: "Theta Explorer",
-      url: "https://explorer.thetatoken.org/",
-    },
-    default: {
-      name: "Theta Explorer",
-      url: "https://explorer.thetatoken.org/",
-    },
-  },
-};
 
 const { chains, publicClient } = configureChains([theta], [publicProvider()]);
 
@@ -127,6 +105,14 @@ function UserNFT(token: { id: number; uri: string; img: string }) {
   //   },
   //   // watch: true,
   // })
+
+  const { data } = useContractRead({
+    address: TNT20_CONTRACT,
+    abi: stakingTNT20ABI,
+    functionName: "getAllIncidents"
+  })
+
+  console.log(data);
 
   const { config: stakeConfig } = usePrepareContractWrite({
     address: TNT20_CONTRACT,
@@ -254,7 +240,7 @@ function UserStakedNFT(token: { id: number; uri: string; img: string }) {
       setTokenReward(
         Number(
           (data ? BigInt(data.toString()) : BigInt("0")) /
-            BigInt("10000000000000000")
+          BigInt("10000000000000000")
         ) / 100
       );
     },
@@ -696,6 +682,36 @@ function YourApp() {
   // }, [address]);
 
   console.log("this is data", data);
+  
+  const formatDate = (timestamp) => {
+    const date = new Date(timestamp * 1000);
+    return date.toLocaleString();
+  };
+
+  const columns = [
+    {
+      title: 'ID',
+      dataIndex: 'id',
+      key: 'id',
+    },
+    {
+      title: 'Description',
+      dataIndex: 'description',
+      key: 'description',
+    },
+    {
+      title: 'Reported By',
+      dataIndex: 'reportedBy',
+      key: 'reportedBy',
+    },
+    {
+      title: 'Timestamp',
+      dataIndex: 'timestamp',
+      key: 'timestamp',
+      render: (text) => formatDate(text),
+    },
+  ];
+
 
   return (
     <div>
@@ -737,7 +753,7 @@ function YourApp() {
             />
             <br />
           </div>
-          <div style={{display:"flex", justifyContent:"flex-end", marginRight:"30px"}}>
+          <div style={{ display: "flex", justifyContent: "flex-end", marginRight: "30px" }}>
             <button
               style={{ width: "100px" }}
               onClick={() => write()}
@@ -748,6 +764,10 @@ function YourApp() {
           </div>
         </div>
       </section>
+
+      <div>
+        {/* <Table columns={columns} dataSource={data} rowKey="id" /> */}
+      </div>
     </div>
   );
 }
